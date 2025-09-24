@@ -5,9 +5,9 @@
 ### Approach
 Turning the dataset into tokens and using them to train a Convolution Neural Netowork and a LSTM(Long Short Term Memory) a type of Recurrent Neural Network(RNN) using PyTorch and comparing them across multiple metrics.
 
-CNN accuracy - 89.5 %
+Highest Achieved CNN accuracy - 89.5 %
 
-LSTM accuracy - 88%
+Highest Achieved LSTM accuracy - 88.5%
 
 
 

@@ -1,0 +1,7 @@
+fastapi
+uvicorn
+torch
+transformers
+psycopg2-binary
+pydantic
+python-dotenv

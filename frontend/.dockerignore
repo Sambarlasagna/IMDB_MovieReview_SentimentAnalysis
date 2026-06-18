@@ -1,0 +1,14 @@
+# Dependencies — installed fresh inside Docker
+node_modules
+
+# Previous build output
+dist
+
+# Local dev env files
+.env
+.env.*
+.env.local
+
+# Editor/OS noise
+.DS_Store
+*.log

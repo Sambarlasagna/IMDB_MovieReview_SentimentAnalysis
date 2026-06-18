@@ -1,0 +1,35 @@
+# Git
+.git
+.gitignore
+.git_disabled
+
+# Python cache
+**/__pycache__
+**/*.pyc
+**/*.pyo
+**/*.pyd
+.Python
+
+# Virtual envs
+.venv
+venv
+env
+
+# Frontend build artifacts — not needed for backend image
+frontend/node_modules
+frontend/dist
+frontend/.env*
+
+# Large files not needed by the backend container
+dataset.csv
+LSTMModel.pt        
+*.png
+*.ipynb
+
+# Docs / config not needed at runtime
+readme.md
+docker-compose.yml
+run.bat
+
+# Secrets — DB creds are passed as env vars in docker-compose
+backend/.env

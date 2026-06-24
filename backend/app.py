@@ -13,6 +13,23 @@ from psycopg2.extras import RealDictCursor
 from datetime import datetime
 from contextlib import asynccontextmanager
 from dotenv import load_dotenv
+from prometheus_fastapi_instrumentator import Instrumentator
+from prometheus_client import Counter, Histogram
+
+PREDICTIONS = Counter(
+    "cinescope_predictions_total",
+    "Total sentiment predictions made",
+    ["sentiment"],          # label: 'positive' or 'negative'
+)
+INFERENCE_TIME = Histogram(
+    "cinescope_inference_seconds",
+    "CNN inference latency in seconds",
+    buckets=[0.05, 0.1, 0.25, 0.5, 1.0, 2.5],
+)
+DB_ERRORS = Counter(
+    "cinescope_db_errors_total",
+    "Total database errors encountered",
+)
 
 # Load .env from the backend/ directory, and force it to override any lingering system variables
 load_dotenv(dotenv_path=os.path.join(os.path.dirname(__file__), ".env"), override=True)
@@ -150,6 +167,7 @@ app.add_middleware(
 # Serve frontend static files at /static/*
 app.mount("/static", StaticFiles(directory=FRONTEND_DIR), name="static")
 
+Instrumentator().instrument(app).expose(app)
 
 # ─── Schemas ───────────────────────────────────────────────────────────────────
 class ReviewRequest(BaseModel):
@@ -167,12 +185,14 @@ def predict(text: str):
         return_tensors="pt",
     )
     input_ids = encoding["input_ids"].to(device)
-    with torch.no_grad():
-        logits = model(input_ids)
-        probs  = torch.softmax(logits, dim=-1)
-        pred   = logits.argmax(dim=-1).item()
-        conf   = probs[0, pred].item()
+    with INFERENCE_TIME.time():
+        with torch.no_grad():
+            logits = model(input_ids)
+            probs  = torch.softmax(logits, dim=-1)
+            pred   = logits.argmax(dim=-1).item()
+            conf   = probs[0, pred].item()
     label = "positive" if pred == 1 else "negative"
+    PREDICTIONS.labels(label).inc()
     return label, round(conf * 100, 2)
 
 

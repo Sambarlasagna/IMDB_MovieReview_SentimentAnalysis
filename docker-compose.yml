@@ -3,32 +3,42 @@ services:
   # ── Existing Services ────────────────────────────────────────────
   db:
     image: postgres:16-alpine
+
+    #if the container crashed or the server reboots docker will automatically restart it
     restart: unless-stopped
     environment:
       POSTGRES_DB:       movie_reviews
       POSTGRES_USER:     postgres
       POSTGRES_PASSWORD: jaya
+    #Maps the named volume 'postgres_data'(stored on ur hard drive) 
+    #to the path '/var/lib/postgresql/data' inside the container where PostgreSQl saves its files
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
+      #this will check if the database is ready to accept connections
       test: ["CMD-SHELL", "pg_isready -U postgres -d movie_reviews"]
       interval: 5s
       timeout: 5s
       retries: 15
 
   backend:
+    #instead of prebuilt images we r telling docker to build one from our code
     build:
       context: .
       dockerfile: backend/Dockerfile
     restart: unless-stopped
     environment:
+      #connect to the databse service
       DB_HOST:     db
       DB_PORT:     5432
       DB_NAME:     movie_reviews
       DB_USER:     postgres
       DB_PASSWORD: jaya
+    # Makes port 8000 available only to other containers in this Docker network 
+    # (like the frontend), but not to your host machine's browser directly.
     expose:
       - "8000"
+    #Wait to start the backend until the database passes the healthcheck we defined earlier.
     depends_on:
       db:
         condition: service_healthy
@@ -47,11 +57,17 @@ services:
   prometheus:
     image: prom/prometheus:v2.52.0
     restart: unless-stopped
-    volumes:
+    #Injects your local configuration file into the container
+    # :ro stands for "Read-Only" so the container can't accidentally alter your local file.
+    volumes:  
       - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
       - prometheus_data:/prometheus
     command:
+      #Tells Prometheus where its config file is.
       - "--config.file=/etc/prometheus/prometheus.yml"
+
+      #Tells Prometheus to automatically delete metrics data 
+      #older than 15 days to save your hard drive space.
       - "--storage.tsdb.retention.time=15d"
     ports:
       - "9090:9090"

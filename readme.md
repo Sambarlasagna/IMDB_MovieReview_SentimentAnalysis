@@ -1,4 +1,4 @@
-# IMDB Movie Reviews Sentiment Analysis
+# CineScope - IMDB Movie Reviews Sentiment Analysis
 
 ##  Classifying a movie review as positive or negative
 

@@ -1,4 +1,16 @@
 *.png
 /mlartifacts
 /mlflow.db
-/monitoring
+
+# Machine Learning & Data
+*.csv
+*.pt
+
+# Python
+__pycache__/
+*.pyc
+
+# Environments & Secrets
+.env
+.venv/
+venv/

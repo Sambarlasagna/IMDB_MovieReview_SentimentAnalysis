@@ -1,0 +1,27 @@
+groups:
+  - name: cinescope.rules
+    rules:
+
+      - alert: HighErrorRate
+        expr: rate(http_requests_total{status=~"5.."}[5m]) > 0.05
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: "High 5xx error rate on CineScope backend"
+
+      - alert: SlowInference
+        expr: histogram_quantile(0.95, rate(cinescope_inference_seconds_bucket[5m])) > 1.5
+        for: 3m
+        labels:
+          severity: warning
+        annotations:
+          summary: "CNN inference P95 latency > 1.5s"
+
+      - alert: DatabaseDown
+        expr: up{job="postgres"} == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "PostgreSQL exporter is unreachable"
